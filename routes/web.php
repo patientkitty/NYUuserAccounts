@@ -18,4 +18,6 @@ Route::get('/', function () {
 Route::get('/show', 'TestController@show');
 Route::get('/ems', 'EMScontroller@hello');
 Route::get('/buildings', 'EMScontroller@buildings');
-Route::get('/webUsers', 'EMScontroller@webUsers');
+Route::get('/webUsers', 'EMScontroller@groupDetails');
+Route::get('/findUser', 'EMScontroller@findUser');
+Route::get('/input','viewcontroller@inputview');

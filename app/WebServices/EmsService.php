@@ -143,4 +143,53 @@ class EmsService
         return $webUsers;
 
     }
+
+    public function getGroups($email)
+    {
+
+        $result = $this->client->GetGroups([
+            'UserName' => $this->username,
+            'Password' => $this->password,
+            'EmailAddress' => $email,
+        ]);
+        $groupResult = $result->GetGroupsResult;
+        $oXML = new \SimpleXMLElement($groupResult);
+        //var_dump($oXML);
+        $groups = [];
+        $xml_groups = $oXML->Data;
+        foreach ($xml_groups as $xml_group) {
+            $group = [
+                'username' => (string)$xml_group->GroupName,
+                'Email' => (string)$xml_group->EMailAddress,
+                'groupID' => (string)$xml_group->ID,
+                //'room' => $xml_building->Room,
+            ];
+            $groups[] = $group;
+        }
+        return $groups;
+    }
+
+    public function getGroupDetails($groupID)
+    {
+
+        $result = $this->client->GetGroupDetails([
+            'UserName' => $this->username,
+            'Password' => $this->password,
+            'GroupID' => $groupID,
+        ]);
+        $groupDetailResult = $result->GetGroupDetailsResult;
+        $oXML = new \SimpleXMLElement($groupDetailResult);
+        $groupDetails = [];
+        $xml_groupDetails = $oXML->Data;
+        foreach ($xml_groupDetails as $xml_groupDetail) {
+            $groupDetail = [
+                'username' => (string)$xml_groupDetail->GroupName,
+                'NetID' => (string)$xml_groupDetail->ExternalReference,
+                'Email' => (string)$xml_groupDetail->EMailAddress,
+
+            ];
+            $groupDetails[] = $groupDetail;
+        }
+        return $groupDetails;
+    }
 }

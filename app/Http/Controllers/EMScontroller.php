@@ -34,4 +34,25 @@ class EMScontroller extends Controller
             echo $building;
         }
     }
+
+    public function groups()
+    {
+        $service = new EmsService();
+        $groups = collect($service->getGroups('ss9545@nyu.edu'));
+        dd($groups);die();
+    }
+
+    public function groupDetails()
+    {
+        $service = new EmsService();
+        $groupDetails = collect($service->getGroupDetails('67598'));
+        dd($groupDetails);die();
+    }
+
+    public function findUser($email)
+    {
+        $service = new EmsService();
+        $groupDetails = collect($service->getGroups($email));
+        dd($groupDetails);die();
+    }
 }
