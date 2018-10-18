@@ -6,4 +6,6 @@ return [
     'url' => 'https://kop003-wwb-tv.ad.nyu.edu/EMSAPI_Shared_Test/service.asmx?wsdl',
     'username' => 'EMSAPI',
     'password' => '3MSpassword',
+    'grouptypeid' => 175,
+    'active' => 1,
 ];

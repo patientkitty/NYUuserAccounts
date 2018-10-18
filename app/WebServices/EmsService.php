@@ -17,6 +17,8 @@ class EmsService
         $url = config('ems.url');
         $this->username = config('ems.username');
         $this->password = config('ems.password');
+        $this->grouptypeid = config('ems.grouptypeid');
+        $this->active = config('ems.active');
 
         //$wsdl = file_get_contents($url);
         // libxml_disable_entity_loader(false);
@@ -191,5 +193,41 @@ class EmsService
             $groupDetails[] = $groupDetail;
         }
         return $groupDetails;
+    }
+
+    public function updateGroup()
+    {
+
+        $result = $this->client->UpdateGroup([
+            'UserName' => $this->username,
+            'Password' => $this->password,
+            'GroupTypeID' => $this->grouptypeid,
+            'Active' =>  $this->active,
+            'GroupID' => 67598,
+            'EmailAddress' => 'zc18@1.com',
+            'Fax' => '',
+            'GroupName' => 'Cao Laoshi',
+            'ExternalReference' => 'zc18',
+            'Address1' => '',
+            'Address2' => '',
+            'City' => '',
+            'State' => '',
+            'ZipCode' => '',
+            'Country' => '',
+            'Phone' => '',
+        ]);
+        $updateGroup = $result->UpdateGroupResult;
+        $oXML = new \SimpleXMLElement($updateGroup);
+        //dd($oXML);
+        $updateGroupResults = [];
+        $xml_updateGroupresults = $oXML->Message;
+        //dd($xml_updateGroupresults);
+        foreach ($xml_updateGroupresults as $xml_updateGroupresult) {
+            $updateGroupResult = [
+                'message' => (string)$xml_updateGroupresult->Message,
+            ];
+            $updateGroupResults[] = $updateGroupResult;
+        }
+        return $updateGroupResults;
     }
 }

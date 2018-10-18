@@ -62,6 +62,13 @@ class EMScontroller extends Controller
         return view('input',['inputs'=>$groupDetails]);
     }
 
+    public function test()
+    {
+        $service = new EmsService();
+        $run = $service->updateGroup();
+        echo $run[0]['message'];
+    }
+
     public function createUser(Request $request)
     {
         //Initialize result for view feedback
