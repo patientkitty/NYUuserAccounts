@@ -65,7 +65,7 @@ class EMScontroller extends Controller
     public function test()
     {
         $service = new EmsService();
-        $run = $service->updateGroup();
+        $run = $service->updateGroup(67598,'zc18@nyu.edu','Cao, Zhikai (zc18)','zc18');
         echo $run[0]['message'];
     }
 
@@ -97,16 +97,25 @@ class EMScontroller extends Controller
                 && $groupDetails[0]['Email'] == $webinputNetID. '@nyu.edu'
             ){
                 //Correct return existing EMS data;
-                $results['EMS Event Request'] = 'Already Exist';
+                $results['EMS Event Requester'] = 'Already Exist';
                 $results['ER_Name'] = $groupDetails[0]['username'];
                 $results['ER_External Reference'] = $groupDetails[0]['NetID'];
                 $results['ER_Email Address'] = $groupDetails[0]['Email'];
                 return view('input',['inputs'=>$results]);
                 //dd($result);
             }else{//NOT correct run API - UpdateGroup
-                echo 'something wrong';
+                $updateGroup = $service->updateGroup($groupID,$webinputNetID.'@nyu.edu',$webinputuserName.' ('.$webinputNetID.')',$webinputNetID);
+                if($updateGroup[0]['message'] == 'Success!')//If update success return updated Event Requester details
+                {
+                    echo 'Sam Win!';
+                    $updatedGroupDetails = collect($service->getGroupDetails($groupID));
+                    $results['EMS Event Requester'] = 'Updated';
+                    $results['ER_Name'] = $updatedGroupDetails[0]['username'];
+                    $results['ER_External Reference'] = $updatedGroupDetails[0]['NetID'];
+                    $results['ER_Email Address'] = $updatedGroupDetails[0]['Email'];
+                    return view('input',['inputs'=>$results]);
+                };
             }
-
         }else{//Event requester NOT exist, then create new event requester API - AddGroup
             echo "No EMS event requester found";
         }

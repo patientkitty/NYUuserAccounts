@@ -195,7 +195,7 @@ class EmsService
         return $groupDetails;
     }
 
-    public function updateGroup()
+    public function updateGroup($groupID,$email,$username,$NetID)
     {
 
         $result = $this->client->UpdateGroup([
@@ -203,11 +203,11 @@ class EmsService
             'Password' => $this->password,
             'GroupTypeID' => $this->grouptypeid,
             'Active' =>  $this->active,
-            'GroupID' => 67598,
-            'EmailAddress' => 'zc18@1.com',
+            'GroupID' => $groupID,
+            'EmailAddress' => $email,
             'Fax' => '',
-            'GroupName' => 'Cao Laoshi',
-            'ExternalReference' => 'zc18',
+            'GroupName' => $username,
+            'ExternalReference' => $NetID,
             'Address1' => '',
             'Address2' => '',
             'City' => '',
