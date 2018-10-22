@@ -218,10 +218,8 @@ class EmsService
         ]);
         $updateGroup = $result->UpdateGroupResult;
         $oXML = new \SimpleXMLElement($updateGroup);
-        //dd($oXML);
         $updateGroupResults = [];
         $xml_updateGroupresults = $oXML->Message;
-        //dd($xml_updateGroupresults);
         foreach ($xml_updateGroupresults as $xml_updateGroupresult) {
             $updateGroupResult = [
                 'message' => (string)$xml_updateGroupresult->Message,
@@ -229,5 +227,38 @@ class EmsService
             $updateGroupResults[] = $updateGroupResult;
         }
         return $updateGroupResults;
+    }
+
+
+    public function addGroup($email,$username,$NetID)
+    {
+
+        $result = $this->client->AddGroup([
+            'UserName' => $this->username,
+            'Password' => $this->password,
+            'GroupTypeID' => $this->grouptypeid,
+            'EmailAddress' => $email,
+            'Fax' => '',
+            'GroupName' => $username,
+            'ExternalReference' => $NetID,
+            'Address1' => '',
+            'Address2' => '',
+            'City' => '',
+            'State' => '',
+            'ZipCode' => '',
+            'Country' => '',
+            'Phone' => '',
+        ]);
+        $addGroup = $result->AddGroupResult;
+        $oXML = new \SimpleXMLElement($addGroup);
+        $addGroupResults = [];
+        $xml_addGroupresults = $oXML->Data;
+        foreach ($xml_addGroupresults as $xml_addGroupresult) {
+            $addGroupResult = [
+                'GroupID' => (string)$xml_addGroupresult->GroupID,
+            ];
+            $addGroupResults[] = $addGroupResult;
+        }
+        return $addGroupResults;
     }
 }
