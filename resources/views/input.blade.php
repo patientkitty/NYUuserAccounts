@@ -34,8 +34,8 @@
     <table class="table">
         <thead>
         <tr>
-            <th scope="col">Group</th>
-            <th scope="col">Event Name</th>
+            <th scope="col">Item</th>
+            <th scope="col">Value</th>
             <th scope="col">Date</th>
             <th scope="col">Time Start</th>
             <th scope="col">Time End</th>
@@ -44,7 +44,8 @@
         </thead>
 
         @if(!empty($inputs))
-            @foreach($inputs as $key => $value )
+            <h1>Import Result</h1>
+        @foreach($inputs as $key => $value )
                 <tbody>
                 <tr>
                     <td>{{$key}}</td>

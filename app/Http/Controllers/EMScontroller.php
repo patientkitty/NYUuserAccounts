@@ -65,8 +65,14 @@ class EMScontroller extends Controller
     public function test()
     {
         $service = new EmsService();
-        $run = $service->addGroup('test18@nyu.edu','test, Zhikai (zc18)','test18');
-        dd($run);
+        $run = $service->getWebUserWebProcessTemplates('91276');
+        $results = [];
+        foreach ($run as $ru)
+        {
+            $results['WS_AppID: '.$ru['ID']] = $ru['Description'];
+        }
+        return view('input',['inputs'=>$results]);
+        //dd($run);
     }
 
     public function createUser(Request $request)
@@ -79,6 +85,15 @@ class EMScontroller extends Controller
         $webinputNetID = $inputs['NetID'];
         $webinputuserName = $inputs['userName'];
         $webinputuserType = $inputs['userType'];
+        $webApplicationTemplates = [];
+        if($webinputuserType == 'Staff'){
+            $webApplicationTemplates = [45,46];
+        }elseif($webinputuserType == 'Faculty'){
+            $webApplicationTemplates = [45,46,51];
+        }elseif($webinputuserType == 'Student'){
+            $webApplicationTemplates = [8,38];
+        }
+        //dd($webApplicationTemplates);die();
 
         //Verify Event Requester exist? API - getGroups
         $email = $webinputNetID.'@nyu.edu';
@@ -88,6 +103,7 @@ class EMScontroller extends Controller
         //Event requester exist, then check if user name and NetID correct API - GetGroupDetails
         if(!empty($group[0])){
             $groupID = $group[0]['groupID'];
+            $results['groupID'] = $groupID;
             $groupDetails = collect($service->getGroupDetails($groupID));
             //dd($groupDetails);
 
@@ -101,8 +117,8 @@ class EMScontroller extends Controller
                 $results['ER_Name'] = $groupDetails[0]['username'];
                 $results['ER_External Reference'] = $groupDetails[0]['NetID'];
                 $results['ER_Email Address'] = $groupDetails[0]['Email'];
-                return view('input',['inputs'=>$results]);
-                //dd($result);
+                //return view('input',['inputs'=>$results]);
+
             }else{//NOT correct run API - UpdateGroup
                 $updateGroup = $service->updateGroup($groupID,$webinputNetID.'@nyu.edu',$webinputuserName.' ('.$webinputNetID.')',$webinputNetID);
                 if($updateGroup[0]['message'] == 'Success!')//If update success return updated Event Requester details
@@ -112,30 +128,64 @@ class EMScontroller extends Controller
                     $results['ER_Name'] = $updatedGroupDetails[0]['username'];
                     $results['ER_External Reference'] = $updatedGroupDetails[0]['NetID'];
                     $results['ER_Email Address'] = $updatedGroupDetails[0]['Email'];
-                    return view('input',['inputs'=>$results]);
+                    //return view('input',['inputs'=>$results]);
                     }
                 else
                     {
-                    $results['EMS Event Requester'] = 'Update FAILED!';
-                    return view('input',['inputs'=>$results]);
+                        $results['EMS Event Requester'] = 'Update FAILED! mailto:shanghai.it.business-application-support@nyu.edu';
+                        //return view('input',['inputs'=>$results]);
                     }
             }
         }else{//Event requester NOT exist, then create new event requester API - AddGroup
-            echo "No EMS event requester found";
+            //echo "No EMS event requester found";
             $addGroup = $service->addGroup($webinputNetID.'@nyu.edu',$webinputuserName.' ('.$webinputNetID.')',$webinputNetID);
             if(!empty($addGroup[0]))
             {
                 $addedGroupID = $addGroup[0]['GroupID'];
+                $results['groupID'] = $addedGroupID;
                 $addedGroupDetails = collect($service->getGroupDetails($addedGroupID));
                 $results['EMS Event Requester'] = 'Created new';
                 $results['ER_Name'] = $addedGroupDetails[0]['username'];
                 $results['ER_External Reference'] = $addedGroupDetails[0]['NetID'];
                 $results['ER_Email Address'] = $addedGroupDetails[0]['Email'];
-                return view('input',['inputs'=>$results]);
-                
-            }
+                //return view('input',['inputs'=>$results]);
+            }else
+                {
+                    $results['EMS Event Requester'] = 'Create FAILED! mailto:shanghai.it.business-application-support@nyu.edu';
+                    //return view('input',['inputs'=>$results]);
+                }
         }
         //dd($groupDetails);
+        //Verify Web Application User exist? API - getWebUsers
+        $webUser = collect($service->getWebUsers($webinputNetID));
+        if(!empty($webUser[0]))//User already exist, update web application user via API
+        {
+            dd($webUser); die();
+        }else//User not exist, Create new web application user via API
+        {
+            //Need Group ID to link Web Application User with Event Requester
+            $existGroupID = [$results['groupID']];
+            $service->addWebUser($email,$webinputuserName,$webinputNetID,$webApplicationTemplates,$existGroupID);
+            $results['EMS Web Application User'] = 'Create success!';
+            $newWebUser = collect($service->getWebUsers($webinputNetID));
+            if(!empty($newWebUser[0])){
+                //Search and return new crated Web Application user detail information
+                $newWebUserDetails = $service->getWebUserDetails($newWebUser[0]['ID']);
+                foreach ($newWebUserDetails[0] as $key => $value)
+                {
+                    $results['WS_'.$key] = $value;
+                }
+                //Search and return new created Web Application user templates detail
+                $newWebUserAppTemplates = $service->getWebUserWebProcessTemplates($newWebUser[0]['ID']);
+                foreach ($newWebUserAppTemplates as $newWebUserAppTemplate)
+                {
+                    $results['WS_AppID: '.$newWebUserAppTemplate['ID']] = $newWebUserAppTemplate['Description'];
+                }
+            }else{
+                $results['EMS Web Application User'] = 'Create FAILED!  mailto:shanghai.it.business-application-support@nyu.edu';
+            }
+        }
+        return view('input',['inputs'=>$results]);
 
     }
 }

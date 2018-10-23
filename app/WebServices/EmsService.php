@@ -19,6 +19,8 @@ class EmsService
         $this->password = config('ems.password');
         $this->grouptypeid = config('ems.grouptypeid');
         $this->active = config('ems.active');
+        $this->timezoneid = config('ems.timezoneid');
+        $this->webSecurityTemplateID = config('ems.webSecurityTemplateID');
 
         //$wsdl = file_get_contents($url);
         // libxml_disable_entity_loader(false);
@@ -121,13 +123,13 @@ class EmsService
         return $bookings;
     }
 
-    public function getWebUsers()
+    public function getWebUsers($NetID)
     {
 
         $result = $this->client->GetWebUsers([
             'UserName' => $this->username,
             'Password' => $this->password,
-            'ExternalReference' => 'ss9545',
+            'ExternalReference' => $NetID,
         ]);
         $webUsersResult = $result->GetWebUsersResult;
         $oXML = new \SimpleXMLElement($webUsersResult);
@@ -138,11 +140,66 @@ class EmsService
             $webUser = [
                 'username' => (string)$xml_webUser->UserName,
                 'NetID' => (string)$xml_webUser->ExternalReference,
+                'ID' => (string)$xml_webUser->ID,
                 //'room' => $xml_building->Room,
             ];
             $webUsers[] = $webUser;
         }
         return $webUsers;
+
+    }
+
+    public function getWebUserDetails($WebUserID)
+    {
+
+        $result = $this->client->GetWebUserDetails([
+            'UserName' => $this->username,
+            'Password' => $this->password,
+            'WebUserID' => $WebUserID,
+        ]);
+        $webUserDetailsResult = $result->GetWebUserDetailsResult;
+        $oXML = new \SimpleXMLElement($webUserDetailsResult);
+        //var_dump($oXML);
+        $webUserDetails = [];
+        $xml_webUserDetails = $oXML->Data;
+        foreach ($xml_webUserDetails as $xml_webUserDetail) {
+            $webUserDetail = [
+                'username' => (string)$xml_webUserDetail->UserName,
+                'NetID' => (string)$xml_webUserDetail->ExternalReference,
+                'Email' => (string)$xml_webUserDetail->EmailAddress,
+                'NetworkID' => (string)$xml_webUserDetail->NetworkID,
+                'TimeZoneID' => (string)$xml_webUserDetail->TimeZoneID,
+                'SecurityStatus' => (string)$xml_webUserDetail->SecurityStatus,
+                'SecTemplateID' => (string)$xml_webUserDetail->TemplateID,
+                //'room' => $xml_building->Room,
+            ];
+            $webUserDetails[] = $webUserDetail;
+        }
+        return $webUserDetails;
+
+    }
+
+    public function getWebUserWebProcessTemplates($WebUserID)
+    {
+
+        $result = $this->client->GetWebUserWebProcessTemplates([
+            'UserName' => $this->username,
+            'Password' => $this->password,
+            'WebUserID' => $WebUserID,
+        ]);
+        $webUserWebProcessTemplatesResult = $result->GetWebUserWebProcessTemplatesResult;
+        $oXML = new \SimpleXMLElement($webUserWebProcessTemplatesResult);
+        //var_dump($oXML);
+        $webUserWebProcessTemplatesResults = [];
+        $xml_webUserWebProcessTemplates = $oXML->Data;
+        foreach ($xml_webUserWebProcessTemplates as $xml_webUserWebProcessTemplate) {
+            $webUserWebProcessTemplate = [
+                'ID' => (string)$xml_webUserWebProcessTemplate->ID,
+                'Description' => (string)$xml_webUserWebProcessTemplate->Description,
+            ];
+            $webUserWebProcessTemplates[] = $webUserWebProcessTemplate;
+        }
+        return $webUserWebProcessTemplates;
 
     }
 
@@ -260,5 +317,41 @@ class EmsService
             $addGroupResults[] = $addGroupResult;
         }
         return $addGroupResults;
+    }
+
+    public function addWebUser($email,$username,$NetID,$webAppTemplates,$groupID)
+    {
+
+        $result = $this->client->AddWebUser([
+            'UserName' => $this->username,
+            'Password' => $this->password,
+            'EmailAddress' => $email,
+            'Fax' => '',
+            'TimeZoneID' => $this->timezoneid,
+            'StatusID' => 0,
+            'WebSecurityTemplateID' => $this->webSecurityTemplateID,
+            'WebUserName' => $username,
+            'ExternalReference' => $NetID,
+            'NetworkID' => $NetID,
+            'TimeZoneID' => $this->timezoneid,
+            'StatusID' => 0,
+            'WebSecurityTemplateID' => $this->webSecurityTemplateID,
+            'WebProcessTemplates' => $webAppTemplates,
+            'Groups' =>  $groupID,
+            'Validated' => 1,
+            'Phone' => '',
+        ]);
+        //dd($result);die();
+        $addWebUser = $result->AddWebUserResult;
+        $oXML = new \SimpleXMLElement($addWebUser);
+        $addWebUserResults = [];
+        $xml_addWebUserresults = $oXML->Data;
+        foreach ($xml_addWebUserresults as $xml_addWebUserresult) {
+            $addWebUserResult = [
+                'WebUserID' => (string)$xml_addWebUserresult->WebUserID,
+            ];
+            $addWebUserResults[] = $addWebUserResult;
+        }
+        return $addWebUserResults;
     }
 }
