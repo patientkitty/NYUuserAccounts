@@ -354,4 +354,37 @@ class EmsService
         }
         return $addWebUserResults;
     }
+
+    public function updateWebUser($webUserID,$email,$username,$NetID,$webProcessTemplates,$groupIDs)
+    {
+
+        $result = $this->client->UpdateWebUser([
+            'UserName' => $this->username,
+            'Password' => $this->password,
+            'WebUserID' => $webUserID,
+            'WebUserName' =>  $username,
+            'EmailAddress' => $email,
+            'Fax' => '',
+            'NetworkID' => $NetID,
+            'ExternalReference' => $NetID,
+            'TimeZoneID' => $this->timezoneid,
+            'StatusID' => 0,//0 means active user
+            'WebSecurityTemplateID' => $this->webSecurityTemplateID,
+            'WebProcessTemplates' => $webProcessTemplates,
+            'Groups' => $groupIDs,
+            'Validated' => 1,
+            'Phone' => '',
+        ]);
+        $updateWebUser = $result->UpdateWebUserResult;
+        $oXML = new \SimpleXMLElement($updateWebUser);
+        $updateWebUserResults = [];
+        $xml_updateWebUserresults = $oXML->Message;
+        foreach ($xml_updateWebUserresults as $xml_updateWebUserresult) {
+            $updateWebUserResult = [
+                'message' => (string)$xml_updateWebUserresult->Message,
+            ];
+            $updateWebUserResults[] = $updateWebUserResult;
+        }
+        return $updateWebUserResults;
+    }
 }

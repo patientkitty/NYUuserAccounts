@@ -3,7 +3,8 @@
 @section('content')
 
     <h1>EMS User Import</h1>
-    <form action="search" method="post" enctype="multipart/form-data">
+    <h3>Create Single User</h3>
+    <form action="create" method="post" enctype="multipart/form-data">
         <input type="hidden" name="_token" value="{{csrf_token()}}"/>
         <div class="form-row">
             <div class="form-group col-md-2">
@@ -28,6 +29,18 @@
         </div>
 
         <button type="submit" class="btn btn-primary">Submit</button>
+    </form>
+    <br>
+    <h3>Bulk Upload Users</h3>
+    <form action="test" method="post" enctype="multipart/form-data">
+        <input type="hidden" name="_token" value="{{csrf_token()}}"/>
+        <div class="form-group">
+            <label for="uploadFile">Please upload new EMS user import template</label>
+            <a class="btn btn-outline-info" href="{{url('/emsTemplate')}}" role="button">Download Template</a>
+            <input type="file" class="form-control-file" id="uploadFile">
+        </div>
+
+        <button type="test" class="btn btn-primary">Upload</button>
     </form>
     <br>
 

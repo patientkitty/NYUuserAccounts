@@ -4,6 +4,9 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\WebServices\EmsService;
+use Illuminate\Support\Facades\Storage;
+use Maatwebsite\Excel\Excel;
+
 
 class EMScontroller extends Controller
 {
@@ -62,29 +65,65 @@ class EMScontroller extends Controller
         return view('input',['inputs'=>$groupDetails]);
     }
 
-    public function test()
+    public function template()
     {
-        $service = new EmsService();
-        $run = $service->getWebUserWebProcessTemplates('91276');
-        $results = [];
-        foreach ($run as $ru)
-        {
-            $results['WS_AppID: '.$ru['ID']] = $ru['Description'];
-        }
-        return view('input',['inputs'=>$results]);
-        //dd($run);
+
+        return Storage::download('/public/userImportTemplates/emsUserImportTemplate.xlsx');
+    }
+
+    public function test(Request $request)
+    {
+//        $service = new EmsService();
+//        //$run = $service->updateWebUser('96232','dsdds@nyu.edu','Test, Shanghai','dsdds',[46,46,51],[68534]);
+//        $WebUserID = '';
+//        $run = $service->getWebUserWebProcessTemplates('96232');
+//        $results = [];
+//        foreach ($run as $ru)
+//        {
+//            $results[] = $ru['ID'];
+//        }
+//        $array = [1,2,3];
+//
+//        //return view('input',['inputs'=>$results]);
+//        //$test = $run[0]['ID'];
+//        dd(array_merge($results,$array));
+        //dd($request);
+        Excel::load($request, function($reader) {
+            //  $reader->
+            $results = $reader->formatDates(false)->toArray();
+
+            foreach ($results as $result) {
+
+                foreach ($result as $key => $value) {
+                    echo($result[$key]);
+
+                }
+
+
+            }
+
+        });
+
     }
 
     public function createUser(Request $request)
     {
-        //Initialize result for view feedback
-        $results = [];
-
         //get user input data, array with User Name, NetID and User Type (Staff, Faculty, Student)
         $inputs= $request->all();
         $webinputNetID = $inputs['NetID'];
         $webinputuserName = $inputs['userName'];
         $webinputuserType = $inputs['userType'];
+        $results = $this->createSingleUser($webinputNetID,$webinputuserName,$webinputuserType);
+        return view('input',['inputs'=>$results]);
+
+    }
+
+    public function createSingleUser($webinputNetID,$webinputuserName,$webinputuserType)
+    {
+        //Initialize result for view feedback
+        $results = [];
+
+
         $webApplicationTemplates = [];
         if($webinputuserType == 'Staff'){
             $webApplicationTemplates = [45,46];
@@ -93,7 +132,6 @@ class EMScontroller extends Controller
         }elseif($webinputuserType == 'Student'){
             $webApplicationTemplates = [8,38];
         }
-        //dd($webApplicationTemplates);die();
 
         //Verify Event Requester exist? API - getGroups
         $email = $webinputNetID.'@nyu.edu';
@@ -160,7 +198,59 @@ class EMScontroller extends Controller
         $webUser = collect($service->getWebUsers($webinputNetID));
         if(!empty($webUser[0]))//User already exist, update web application user via API
         {
-            dd($webUser); die();
+            $existWebUserDetails = collect($service->getWebUserDetails($webUser[0]['ID']));
+            //dd($existWebUserDetails);die();
+            $existWebUserStatus = $existWebUserDetails[0]['SecurityStatus'];
+            if($existWebUserStatus == 0)
+            {
+                //echo 'I am in!';die();
+                //Get exist user's application template
+                $getExistWebUserAppTemplates = collect($service->getWebUserWebProcessTemplates($webUser[0]['ID']));
+                $existWebUserAppTemplateIDs = [];
+                foreach ($getExistWebUserAppTemplates as $getExistWebUserAppTemplate)
+                {
+                    $existWebUserAppTemplateIDs[] = $getExistWebUserAppTemplate['ID'];
+                }
+                //Web Application user exist run update
+                $existGroupID = [$results['groupID']];
+                $updateWebAppTemplates = array_merge($existWebUserAppTemplateIDs,$webApplicationTemplates);
+                //dd($updateWebAppTemplates);die();
+                $service->updateWebUser($webUser[0]['ID'],$email,$webinputuserName,$webinputNetID,$updateWebAppTemplates,$existGroupID);
+                $results['EMS Web Application User'] = 'Update success!';
+                $existWebUserDetails = collect($service->getWebUserDetails($webUser[0]['ID']));
+                foreach ($existWebUserDetails[0] as $key => $value)
+                {
+                    $results['WS_'.$key] = $value;
+                }
+                $existWebUserAppTemplates = collect($service->getWebUserWebProcessTemplates($webUser[0]['ID']));
+                foreach ($existWebUserAppTemplates as $existWebUserAppTemplate)
+                {
+                    $results['WS_AppID: '.$existWebUserAppTemplate['ID']] = $existWebUserAppTemplate['Description'];
+                }
+            }else
+            {
+                //Web Application user status wrong run add to create a new one
+                $existGroupID = [$results['groupID']];
+                $service->addWebUser($email,$webinputuserName,$webinputNetID,$webApplicationTemplates,$existGroupID);
+                $results['EMS Web Application User'] = 'Create success!';
+                $newWebUser = collect($service->getWebUsers($webinputNetID));
+                if(!empty($newWebUser[0])){
+                    //Search and return new crated Web Application user detail information
+                    $newWebUserDetails = $service->getWebUserDetails($newWebUser[0]['ID']);
+                    foreach ($newWebUserDetails[0] as $key => $value)
+                    {
+                        $results['WS_'.$key] = $value;
+                    }
+                    //Search and return new created Web Application user templates detail
+                    $newWebUserAppTemplates = $service->getWebUserWebProcessTemplates($newWebUser[0]['ID']);
+                    foreach ($newWebUserAppTemplates as $newWebUserAppTemplate)
+                    {
+                        $results['WS_AppID: '.$newWebUserAppTemplate['ID']] = $newWebUserAppTemplate['Description'];
+                    }
+                }else{
+                    $results['EMS Web Application User'] = 'Create FAILED!  mailto:shanghai.it.business-application-support@nyu.edu';
+                }
+            }
         }else//User not exist, Create new web application user via API
         {
             //Need Group ID to link Web Application User with Event Requester
@@ -185,7 +275,7 @@ class EMScontroller extends Controller
                 $results['EMS Web Application User'] = 'Create FAILED!  mailto:shanghai.it.business-application-support@nyu.edu';
             }
         }
-        return view('input',['inputs'=>$results]);
+        return $results;
 
     }
 }
