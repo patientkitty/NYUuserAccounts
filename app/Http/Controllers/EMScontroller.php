@@ -5,7 +5,11 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\WebServices\EmsService;
 use Illuminate\Support\Facades\Storage;
-use Maatwebsite\Excel\Excel;
+//use Maatwebsite\Excel\Excel;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Models\EMSuserUpload;
+use App\Models\Emslogs;
+use App\WebServices\OrgSyncService;
 
 
 class EMScontroller extends Controller
@@ -71,38 +75,65 @@ class EMScontroller extends Controller
         return Storage::download('/public/userImportTemplates/emsUserImportTemplate.xlsx');
     }
 
-    public function test(Request $request)
+
+    public function testWebUser()
     {
-//        $service = new EmsService();
-//        //$run = $service->updateWebUser('96232','dsdds@nyu.edu','Test, Shanghai','dsdds',[46,46,51],[68534]);
-//        $WebUserID = '';
-//        $run = $service->getWebUserWebProcessTemplates('96232');
-//        $results = [];
-//        foreach ($run as $ru)
-//        {
-//            $results[] = $ru['ID'];
-//        }
-//        $array = [1,2,3];
-//
-//        //return view('input',['inputs'=>$results]);
-//        //$test = $run[0]['ID'];
-//        dd(array_merge($results,$array));
-        //dd($request);
-        Excel::load($request, function($reader) {
-            //  $reader->
-            $results = $reader->formatDates(false)->toArray();
+        $service = new EmsService();
+        $webUser = collect($service->getWebUsers('rl2896'));
+        dd($webUser);
 
-            foreach ($results as $result) {
+    }
+    public function bulkImportUser(Request $request)
+    {
+        //Save uploaded file to $path
+        $path = $request->file('emsUpload')->store('/public/emsUpload');
+        //Load the just uploaded excel file
+        $path1 = storage_path( 'app/' . $path);
+        Excel::load($path1, function($reader) {
+            $excelDatas = $reader->formatDates(false)->toArray();
+            foreach ($excelDatas as $excelData) {
+                if(!empty($excelData['username']) && !empty($excelData['netid']) && !empty($excelData['usertype']))
+                    {
+                        //All required data exist, run create Single User
+                        $results = $this->createSingleUser($excelData['netid'],$excelData['username'],$excelData['usertype']);
+                        if(!empty($results))
+                        {
+                            //EMS user create success, save log to database
+                            $emslog = new Emslogs();
+                            $emslog->userName = $excelData['username'];
+                            $emslog->NetID = $excelData['netid'];
+                            $emslog->userType = $excelData['usertype'];
+                            $emslog->eventRequester = $results["ER_Name"];
+                            $emslog->webAppUser = $results["WS_username"];
+                            $emslog->save();
+                        }
+                        else
+                        {
+                            //EMS user created failed, save log to database
+                            $emslog = new Emslogs();
+                            $emslog->userName = $excelData['username'];
+                            $emslog->NetID = $excelData['netid'];
+                            $emslog->userType = $excelData['usertype'];
+                            $emslog->eventRequester = "Failed";
+                            $emslog->webAppUser = "Failed";
+                            $emslog->save();
+                        }
 
-                foreach ($result as $key => $value) {
-                    echo($result[$key]);
-
-                }
-
-
+                    }
+                    //Required data missing, save log to database
+                    else
+                    {
+                        $emslog = new Emslogs();
+                        $emslog->userName = $excelData['username'];
+                        $emslog->NetID = $excelData['netid'];
+                        $emslog->userType = $excelData['usertype'];
+                        $emslog->eventRequester = "Data Missing";
+                        $emslog->webAppUser = "Data Missing";
+                        $emslog->save();                    }
             }
-
         });
+        $results['Bulk Import'] = $path . ' Import Complete!';
+        return view('input',['inputs'=>$results]);
 
     }
 
@@ -122,7 +153,6 @@ class EMScontroller extends Controller
     {
         //Initialize result for view feedback
         $results = [];
-
 
         $webApplicationTemplates = [];
         if($webinputuserType == 'Staff'){
@@ -201,7 +231,7 @@ class EMScontroller extends Controller
             $existWebUserDetails = collect($service->getWebUserDetails($webUser[0]['ID']));
             //dd($existWebUserDetails);die();
             $existWebUserStatus = $existWebUserDetails[0]['SecurityStatus'];
-            if($existWebUserStatus == 0)
+            if($existWebUserStatus == 0 | $existWebUserStatus == 3)
             {
                 //echo 'I am in!';die();
                 //Get exist user's application template

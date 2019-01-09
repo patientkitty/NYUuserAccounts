@@ -187,10 +187,9 @@ class EmsService
             'Password' => $this->password,
             'WebUserID' => $WebUserID,
         ]);
+        $webUserWebProcessTemplates =[];
         $webUserWebProcessTemplatesResult = $result->GetWebUserWebProcessTemplatesResult;
         $oXML = new \SimpleXMLElement($webUserWebProcessTemplatesResult);
-        //var_dump($oXML);
-        $webUserWebProcessTemplatesResults = [];
         $xml_webUserWebProcessTemplates = $oXML->Data;
         foreach ($xml_webUserWebProcessTemplates as $xml_webUserWebProcessTemplate) {
             $webUserWebProcessTemplate = [
@@ -271,7 +270,7 @@ class EmsService
             'State' => '',
             'ZipCode' => '',
             'Country' => '',
-            'Phone' => '',
+            'Phone' => ''
         ]);
         $updateGroup = $result->UpdateGroupResult;
         $oXML = new \SimpleXMLElement($updateGroup);
@@ -304,7 +303,7 @@ class EmsService
             'State' => '',
             'ZipCode' => '',
             'Country' => '',
-            'Phone' => '',
+            'Phone' => ''
         ]);
         $addGroup = $result->AddGroupResult;
         $oXML = new \SimpleXMLElement($addGroup);

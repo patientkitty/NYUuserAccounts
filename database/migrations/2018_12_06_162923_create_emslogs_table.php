@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class CreateEMSuserUploadsTable extends Migration
+class CreateEmslogsTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,13 +13,14 @@ class CreateEMSuserUploadsTable extends Migration
      */
     public function up()
     {
-        Schema::create('e_m_suser_uploads', function (Blueprint $table) {
+        Schema::create('emslogs', function (Blueprint $table) {
             $table->increments('id');
             $table->timestamps();
             $table->string('userName')->nullable();
             $table->string('NetID')->nullable();
             $table->string('userType')->nullable();
-            $table->integer('importGroupID')->nullable();
+            $table->string('eventRequester')->nullable();
+            $table->string('webAppUser')->nullable();
             $table->string('uploadedBy')->nullable();
             $table->string('uploadedFile')->nullable();
         });
@@ -32,6 +33,6 @@ class CreateEMSuserUploadsTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('e_m_suser_uploads');
+        Schema::dropIfExists('emslogs');
     }
 }

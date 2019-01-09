@@ -9,11 +9,11 @@
         <div class="form-row">
             <div class="form-group col-md-2">
                 <label for="userName">User Name</label>
-                <input type="text" name="userName" class="form-control" id="inputuserName" placeholder="User Name">
+                <input type="text" required name="userName" class="form-control" id="inputuserName" placeholder="User Name">
             </div>
             <div class="form-group col-md-2">
                 <label for="NetID">NetID</label>
-                <input type="text" name="NetID" class="form-control" id="inputNetID" placeholder="NetID">
+                <input type="text" required name="NetID" class="form-control" id="inputNetID" placeholder="NetID">
             </div>
 
             <div class="form-group col-md-2">
@@ -32,15 +32,16 @@
     </form>
     <br>
     <h3>Bulk Upload Users</h3>
-    <form action="test" method="post" enctype="multipart/form-data">
+    <form action="bulkImportUser" method="post" enctype="multipart/form-data">
         <input type="hidden" name="_token" value="{{csrf_token()}}"/>
         <div class="form-group">
             <label for="uploadFile">Please upload new EMS user import template</label>
             <a class="btn btn-outline-info" href="{{url('/emsTemplate')}}" role="button">Download Template</a>
-            <input type="file" class="form-control-file" id="uploadFile">
+            <input type="file" name="emsUpload" class="form-control-file" id="uploadFile">
         </div>
 
-        <button type="test" class="btn btn-primary">Upload</button>
+
+        <button type="submit" class="btn btn-primary">Upload</button>
     </form>
     <br>
 

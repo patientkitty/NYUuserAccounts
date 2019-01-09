@@ -22,5 +22,7 @@ Route::get('/webUsers', 'EMScontroller@groupDetails');
 Route::get('/findUser', 'EMScontroller@findUser');
 Route::get('/input','viewcontroller@inputview')->name('input');
 Route::post('/create','EMScontroller@createUser');
-Route::get('/test','EMScontroller@test');
+Route::post('/bulkImportUser','EMScontroller@bulkImportUser');
+Route::any('/testWebUser','EMScontroller@testWebUser');
+Route::get('/test1','OrgSyncController@test1');
 Route::get('/emsTemplate','EMScontroller@template');
