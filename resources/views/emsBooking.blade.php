@@ -2,8 +2,8 @@
 
 @section('content')
 
-    <h1>EMS User Import</h1>
-    <h3>Create Single User</h3>
+    <h1>EMS Booking Import</h1>
+    <h3>Add Single Booking</h3>
     <form action="create" method="post" enctype="multipart/form-data">
         <input type="hidden" name="_token" value="{{csrf_token()}}"/>
         <div class="form-row">
@@ -31,13 +31,26 @@
         <button type="submit" class="btn btn-primary">Submit</button>
     </form>
     <br>
-    <h3>Bulk Upload Users</h3>
-    <form action="bulkImportUser" method="post" enctype="multipart/form-data">
+    <h3>Bulk Upload Bookings</h3>
+    <form action="bulkImportBooking" method="post" enctype="multipart/form-data">
         <input type="hidden" name="_token" value="{{csrf_token()}}"/>
         <div class="form-group">
-            <label for="uploadFile">Please upload new EMS user import template</label>
-            <a class="btn btn-outline-info" href="{{url('/emsUserTemplate')}}" role="button">Download Template</a>
-            <input type="file" name="emsUpload" class="form-control-file" id="uploadFile">
+            <label for="uploadFile">Please upload new EMS booking import template</label>
+            <a class="btn btn-outline-info" href="{{url('/emsBookingTemplate')}}" role="button">Download Template</a>
+            <input type="file" name="emsBookingUpload" class="form-control-file" id="uploadFile">
+        </div>
+
+
+        <button type="submit" class="btn btn-primary">Upload</button>
+    </form>
+    <br>
+    <h3>Bulk Upload Reservations</h3>
+    <form action="bulkImportReservation" method="post" enctype="multipart/form-data">
+        <input type="hidden" name="_token" value="{{csrf_token()}}"/>
+        <div class="form-group">
+            <label for="uploadFile">Please upload new EMS Reservation import template</label>
+            <a class="btn btn-outline-info" href="{{url('/emsReservationTemplate')}}" role="button">Download Template</a>
+            <input type="file" name="emsReservationUpload" class="form-control-file" id="uploadFile">
         </div>
 
 

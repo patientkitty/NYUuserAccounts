@@ -9,6 +9,7 @@
 namespace App\WebServices;
 
 use GuzzleHttp\Client;
+use http\Env\Request;
 
 class OrgSyncService
 {
@@ -28,6 +29,27 @@ class OrgSyncService
         $client = new Client();
         $url = 'https://api.orgsync.com/api/v2/form_submissions/'.$submission_id.'?format=json&key='.$this->key;
         $response = $client->get($url);
+        $submission = json_decode($response->getBody(), true);
+        return $submission;
+    }
+
+    public function getAccountByMail()
+    {
+        $mail = 'ss9545@nyu.edu';
+        $client = new Client();
+        $url = 'https://api.orgsync.com/api/v2/accounts/email/'.$mail.'?format=json&key='.$this->key;
+        $response = $client->get($url);
+        $submission = json_decode($response->getBody(), true);
+        return $submission;
+    }
+
+    public function addAccountToClassification()
+    {
+        $userID = '4910446';
+        $classificationID = '337';
+        $client = new Client();
+        $url = 'https://api.orgsync.com/api/v2/classifications/'.$classificationID.'/accounts/add?ids='.$userID.'&key='.$this->key;
+        $response = $client->post($url);
         $submission = json_decode($response->getBody(), true);
         return $submission;
     }

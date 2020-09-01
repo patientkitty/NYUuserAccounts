@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\WebServices\LocalUDWService;
 use Illuminate\Http\Request;
 use App\WebServices\OrgSyncService;
 use Maatwebsite\Excel\Excel;
@@ -10,6 +11,7 @@ use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\Exportable;
 use Maatwebsite\Excel\Concerns\FromArray;
 use App\Exports\EMSExport;
+use App\Models\LocalUDWToken;
 
 
 class OrgSyncController extends Controller
@@ -20,6 +22,49 @@ class OrgSyncController extends Controller
     public function __construct(Excel $excel)
     {
         $this->excel = $excel;
+    }
+
+    public function orgsyncView(){
+        return view('orgsyncView');
+    }
+
+    public function getAccountBymail(){
+        $service = new OrgSyncService();
+        $runing = $service->getAccountBymail();
+        dd($runing);
+    }
+
+    public function addAccountToClassification(){
+        $service = new OrgSyncService();
+        $runing = $service->addAccountToClassification();
+        dd($runing);
+    }
+
+    public function getToken(){
+        $service = new LocalUDWService();
+        $service->requestToken();
+        $result = LocalUDWToken::all();
+        dd($result);
+    }
+    public function getUserByNetID(){
+        $service = new LocalUDWService();
+        $data = $service->getUserByNetID();
+        dd($data);
+
+    }
+    public function refreshToken(){
+        $service = new LocalUDWService();
+        $data = $service->refreshToken();
+        dd($data);
+
+    }
+    public function createUser(Request $request){
+        //0. 使用NetID查询用户详细信息
+        //0.5 如果无法查询到用户信息，提示用户手动输入
+        //1. 检查用户是否已经存在，getAccountByMail(NetID@nyu.edu)
+        //2. 如果用户已存在，根据类别，更新N Number、NetID、Classification、Organizations
+        //3. 如果用户不存在，创建用户信息，按照用户类别，分配到指定的Classification、Organizations
+
     }
 
     public function test1()

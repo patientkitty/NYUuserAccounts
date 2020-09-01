@@ -2,31 +2,11 @@
 
 @section('content')
 
-    <h1>EMS User Import</h1>
+    <h1>OrgSync View</h1>
     <h3>Create Single User</h3>
-    <form action="create" method="post" enctype="multipart/form-data">
+    <form action="getAccountBymail" method="get" enctype="multipart/form-data">
         <input type="hidden" name="_token" value="{{csrf_token()}}"/>
-        <div class="form-row">
-            <div class="form-group col-md-2">
-                <label for="userName">User Name</label>
-                <input type="text" required name="userName" class="form-control" id="inputuserName" placeholder="User Name">
-            </div>
-            <div class="form-group col-md-2">
-                <label for="NetID">NetID</label>
-                <input type="text" required name="NetID" class="form-control" id="inputNetID" placeholder="NetID">
-            </div>
 
-            <div class="form-group col-md-2">
-                <label for="userType">User Type</label>
-                <select class="form-control" name="userType" id="inputuserType">
-                    <option>Staff</option>
-                    <option>Faculty</option>
-                    <option>Student</option>
-                </select>
-            </div>
-
-
-        </div>
 
         <button type="submit" class="btn btn-primary">Submit</button>
     </form>
@@ -36,7 +16,7 @@
         <input type="hidden" name="_token" value="{{csrf_token()}}"/>
         <div class="form-group">
             <label for="uploadFile">Please upload new EMS user import template</label>
-            <a class="btn btn-outline-info" href="{{url('/emsUserTemplate')}}" role="button">Download Template</a>
+            <a class="btn btn-outline-info" href="{{url('/emsTemplate')}}" role="button">Download Template</a>
             <input type="file" name="emsUpload" class="form-control-file" id="uploadFile">
         </div>
 
@@ -55,7 +35,7 @@
             </div>
             <div class="form-group col-md-2">
                 <label for="TemplateID">TemplateID</label>
-                <input type="text" required name="TemplateID" value="66" class="form-control" id="inputTemplateID" placeholder="TemplateID">
+                <input type="text" required name="TemplateID" value="65" class="form-control" id="inputTemplateID" placeholder="TemplateID">
             </div>
 
 

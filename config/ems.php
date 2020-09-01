@@ -2,7 +2,8 @@
 
 
 return [
-    'url' => 'https://kop001-wwb-v.cfs.its.nyu.edu/EMSAPI_Shared/Service.asmx?wsdl',//Production URL
+    'url' => 'https://kop001-wwb-c.cfs.its.nyu.edu/EMSAPI_Shared/Service.asmx?wsdl', //New Production URL
+    //'url' => 'https://kop001-wwb-v.cfs.its.nyu.edu/EMSAPI_Shared/Service.asmx?wsdl',//Old Production URL
     //'url' => 'https://kop003-wwb-tv.ad.nyu.edu/EMSAPI_Shared_Test/service.asmx?wsdl',//Testing URL
     'username' => 'EMSAPI',
     'password' => '3MSpassword',

@@ -10,6 +10,8 @@
         "guzzlehttp/guzzle": "^6.3",
         "laravel/framework": "5.5.*",
         "laravel/tinker": "~1.0",
+        "almasaeed2010/adminlte": "~2.4",
+        "doctrine/dbal": "v2.4.2",
         "maatwebsite/excel": "~2.1.0"
     },
     "require-dev": {

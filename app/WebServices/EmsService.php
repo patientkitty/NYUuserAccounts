@@ -32,10 +32,121 @@ class EmsService
             ],
 
         ]);
+        $opts = array(
+            /*'http' => array(
+                'user_agent' => 'PHPSoapClient'
+            ),*/
+            'cache_wsdl' => 0,
+            'trace' => 1,
+            'stream_context' => stream_context_create(array(
+                    'ssl' => array(
+                        'verify_peer' => false,
+                        'verify_peer_name' => false,
+                        'allow_self_signed' => true
+                    )
+                )
+            )
 
-        $this->client = new \SoapClient($url, [
-            'stream_context' => $context
+        );
+        //$context = stream_context_create($opts);
+
+        //$this->client = new \SoapClient($url);
+        //$data = file_get_contents($url);
+        //var_dump($data);die();
+
+        $this->client = new \SoapClient($url, $opts);
+    }
+    public function updateBooking()
+    {
+        $result = $this->client->UpdateBooking([
+            'UserName' => $this->username,
+            'Password' => $this->password,
+            'BookingDate' =>  (string)"10/2/2019",
+            'StartTime' => "10/02/2019 9:45 AM",
+            'EndTime' => "10/02/2019 11:00 AM",
+            'RoomID' => 524,
+            'BookingID' => 213313,
+            'StatusID' => 0,
         ]);
+        $updateBookingResponse = $result->UpdateBookingResponse;
+        $oXML = new \SimpleXMLElement($updateBookingResponse);
+        var_dump($oXML);
+        //$buildings = [];
+    }
+    public function addReservation($groupID,$roomID,$bookingDate,$startTime,$endTime,$statusID,$eventName)
+    {
+       // echo "book";
+        $result = $this->client->AddReservation([
+            'UserName' => $this->username,
+            'Password' => $this->password,
+            'GroupID' => $groupID,
+            'RoomID' => $roomID,
+            'BookingDate' =>  (string)$bookingDate,
+            'StartTime' => (string)$startTime,
+            'EndTime' => (string)$endTime,
+            'StatusID' => $statusID,
+            'EventName' => $eventName,
+
+//              Add Reservation sample data
+//            'GroupID' => 48956,
+//            'RoomID' => 301,
+//            'BookingDate' =>  (string)"2020-08-04T00:00:00",
+//            'StartTime' => (string)"2020-08-04T11:00:00",
+//            'EndTime' => (string)"2020-08-04T11:10:00",
+//            'StatusID' => 1,
+//            'EventName' => "Created from API",
+
+        ]);
+
+        //AddReservationResult AddReservationResponse
+        $addReservationResponse = $result->AddReservationResult;
+        $oXML = new \SimpleXMLElement($addReservationResponse);
+        //var_dump($oXML);die();
+        $xml_addReservationResult = $oXML->Data;
+        $xml_addReservationError = $oXML->Error;
+        $result = [];
+        $result['newReservationID'] = (string)$xml_addReservationResult->ReservationID;
+        $result['newBookingID'] = (string)$xml_addReservationResult->BookingID;
+        $result['message'] = (string)$xml_addReservationError->Message;
+        return $result;
+    }
+    public function addBooking($resevationID,$roomID,$bookingDate,$startTime,$endTime,$statusID,$eventName,$eventTypeID)
+    {
+
+        $result = $this->client->AddBooking([
+            'UserName' => $this->username,
+            'Password' => $this->password,
+            'ReservationID' => $resevationID,
+            'RoomID' => $roomID,
+            'BookingDate' =>  (string)$bookingDate,
+            'StartTime' => (string)$startTime,
+            'EndTime' => (string)$endTime,
+            'StatusID' => $statusID,
+            'EventName' => $eventName,
+            'EventTypeID' => $eventTypeID,
+//              Add Booking sample data
+//            'ReservationID' => 44471,
+//            'RoomID' => 101,
+//            'BookingDate' =>  (string)"2020-07-24T00:00:00",
+//            'StartTime' => (string)"2020-07-24T15:13:00",
+//            'EndTime' => (string)"2010-07-24T18:13:00",
+//            'StatusID' => 1,
+//            'EventName' => "Created from Admin Client",
+//            'EventTypeID' => 10,
+
+        ]);
+        //AddBookingResult AddBookingResponse
+        $addBookingResponse = $result->AddBookingResult;
+        $oXML = new \SimpleXMLElement($addBookingResponse);
+        //var_dump($oXML);die();
+        $xml_addBookingResult = $oXML->Data;
+        $xml_addBookingError = $oXML->Error;
+        $result = [];
+        $result['newBookingID'] = (string)$xml_addBookingResult->BookingID;
+        $result['message'] = (string)$xml_addBookingError->Message;
+        return $result;
+        //dd($newBookingID);
+        //$buildings = [];
     }
 
     public function getBuildings()
@@ -67,13 +178,15 @@ class EmsService
         $result = $this->client->GetRooms([
             'UserName' => $this->username,
             'Password' => $this->password,
-            // 'Buildings' => (int)$id,
+            'Buildings' => [11],
         ]);
         $roomsResult = $result->GetRoomsResult;
         //  var_dump($result);
         $oXML = new \SimpleXMLElement($roomsResult);
+
         $rooms = [];
         $xml_rooms = $oXML->Data;
+        //var_dump($xml_rooms);die();
         foreach ($xml_rooms as $xml_room) {
             $building_id = (int)$xml_room->BuildingID;
             if ($building_id == $id) {
